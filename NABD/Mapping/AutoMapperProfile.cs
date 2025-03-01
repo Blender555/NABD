@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using NABD.DTO;
 using NABD.Models.Domain;
-using NABD.Models.Domain;
 using System.ComponentModel.Design;
 
 namespace NABD.Mapping
@@ -10,41 +9,47 @@ namespace NABD.Mapping
     {
         public AutoMapperProfile()
         {
-            // **Patient Mappings**
+            // Patient Mappings
             CreateMap<Patient, PatientDto>().ReverseMap();
             CreateMap<Patient, AddPatientDto>().ReverseMap();
-            CreateMap<MedicalStaff, GetAllDoctorsForPatientDto>();
+            CreateMap<Doctor, GetAllDoctorsForPatientDto>();
             CreateMap<Guardian, GetAllGuardiansDto>();
             CreateMap<MedicalHistory, GetMedicalHistoryDto>();
             CreateMap<Report, GetAllReportsDto>();
 
-            //// **Medical Staff Mappings**
-            //CreateMap<MedicalStaff, MedicalStaffDto>().ReverseMap();
-            //CreateMap<MedicalStaff, AddMedicalStaffDto>().ReverseMap();
-            //CreateMap<Patient, GetAllPatientsForMedicalStaffDto>();
-            //CreateMap<Notification, GetAllNotificationsForMedicalStaffDto>();
-            //CreateMap<Emergency, GetAllEmergenciesForMedicalStaffDto>();
+            // Doctor Mappings
+            CreateMap<Doctor, DoctorDto>().ReverseMap();
+            CreateMap<Doctor, GetDoctorDto>().ReverseMap();
+            CreateMap<Doctor, AddDoctorDto>().ReverseMap();
+            CreateMap<AddDoctorDto, Doctor>().ReverseMap();
+            CreateMap<Doctor, UpdateDoctorDto>().ReverseMap();
+            CreateMap<UpdateDoctorDto, Doctor>().ForAllMembers(opt => opt.Condition((src, dest, srcMember) => srcMember != null));
 
-            //// **Guardian Mappings**
-            //CreateMap<Guardian, GuardianDto>().ReverseMap();
-            //CreateMap<Guardian, AddGuardianDto>().ReverseMap();
-            //CreateMap<Patient, GetPatientByGuardianDto>();
-            //CreateMap<Notification, GetAllNotificationsForGuardianDto>();
-            //CreateMap<Emergency, GetAllEmergenciesForGuardianDto>();
+            // Nurse Mappings
+            CreateMap<Nurse, GetNurseDto>();
+            CreateMap<Nurse, AddNurseDto>();
+            CreateMap<Nurse, UpdateNurseDto>();
 
-            //// **Medical History Mappings**
-            //CreateMap<MedicalHistory, MedicalHistoryDto>().ReverseMap();
-            //CreateMap<MedicalHistory, AddMedicalHistoryDto>().ReverseMap();
+            // Guardian Mappings
+            CreateMap<Guardian, GuardianDto>().ReverseMap();
+            CreateMap<Guardian, AddGuardianDto>().ReverseMap();
+            CreateMap<Patient, GetPatientByGuardianIdDto>();
+            CreateMap<Notification, GetAllNotificationsForGuardianDto>();
+            CreateMap<Emergency, GetAllEmergenciesForGuardianDto>();
 
-            //// **Report Mappings**
-            //CreateMap<Report, ReportDto>().ReverseMap();
-            //CreateMap<Report, AddReportDto>().ReverseMap();
+            // Medical History Mappings
+            CreateMap<MedicalHistory, AddMedicalHistoryDto>().ReverseMap();
+            CreateMap<MedicalHistory, GetMedicalHistoryDto>().ReverseMap();
+            CreateMap<MedicalHistory, UpdateMedicalHistoryDto>().ReverseMap();
 
-            //// **Emergency Mappings**
+            // Report Mappings
+            CreateMap<Report, AddReportDto>().ReverseMap();
+            CreateMap<Report, UpdateReportDto>().ReverseMap();
+
+            // Emergency Mappings
             //CreateMap<Emergency, EmergencyDto>().ReverseMap();
-            //CreateMap<Emergency, AddEmergencyDto>().ReverseMap();
 
-            //// **Tool Mappings**
+            // Tool Mappings
             //CreateMap<Tool, ToolDto>().ReverseMap();
             //CreateMap<Tool, AddToolDto>().ReverseMap();
 

@@ -1,11 +1,12 @@
 ﻿using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using NABD.Areas.Identity;
 using NABD.Models.Domain;
 
 namespace NABD.Data
 {
-    public class ApplicationDbContext : IdentityDbContext<IdentityUser>
+    public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
@@ -42,9 +43,15 @@ namespace NABD.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Emergency>()
-                .HasOne(e => e.MedicalStaff)
+                .HasOne(e => e.Doctor)
                 .WithMany(ms => ms.Emergencies)
-                .HasForeignKey(e => e.MedicalStaffId)
+                .HasForeignKey(e => e.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Emergency>()
+                .HasOne(e => e.Nurse)
+                .WithMany(ms => ms.Emergencies)
+                .HasForeignKey(e => e.NurseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Emergency>()
@@ -99,11 +106,11 @@ namespace NABD.Data
                 .HasForeignKey(r => r.PatientId)
                 .OnDelete(DeleteBehavior.Restrict);
 
-            // MedicalStaff - Report Relationship
+            // Doctor - Report Relationship
             modelBuilder.Entity<Report>()
-                .HasOne(r => r.MedicalStaff)
+                .HasOne(r => r.Doctor)
                 .WithMany(ms => ms.Reports)
-                .HasForeignKey(r => r.MedicalStaffId)
+                .HasForeignKey(r => r.DoctorId)
                 .OnDelete(DeleteBehavior.Restrict);
 
             // Tool - Patient 1:1 Relationship
@@ -114,11 +121,6 @@ namespace NABD.Data
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Doctor - Nurse Relationship
-            modelBuilder.Entity<MedicalStaff>()
-                .HasDiscriminator<string>("Discriminator")
-                .HasValue<Doctor>("Doctor")
-                .HasValue<Nurse>("Nurse");
-
             modelBuilder.Entity<Nurse>()
                 .HasOne(n => n.Doctor)
                 .WithMany(d => d.Nurses)
@@ -145,9 +147,15 @@ namespace NABD.Data
                 .OnDelete(DeleteBehavior.Restrict);
 
             modelBuilder.Entity<Notification>()
-                .HasOne(n => n.MedicalStaff)
+                .HasOne(n => n.Doctor)
                 .WithMany(ms => ms.Notifications)
-                .HasForeignKey(n => n.MedicalStaffId)
+                .HasForeignKey(n => n.DoctorId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            modelBuilder.Entity<Notification>()
+                .HasOne(n => n.Nurse)
+                .WithMany(ms => ms.Notifications)
+                .HasForeignKey(n => n.NurseId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 

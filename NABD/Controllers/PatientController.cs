@@ -29,12 +29,14 @@ namespace NABD.Controllers
             var patientdto = mapper.Map<PatientDto>(patientmodel);
             return Ok(patientdto);
         }
+
         [HttpGet]
         public async Task<IActionResult> GetAll([FromQuery] int pageNumber = 1, int pageSize = 1000)
         {
             var patients = await patientrepo.GetAll(pageNumber, pageSize);
             return Ok(patients);
         }
+
         [HttpGet]
         [Route("ById/{id}")]
         public async Task<IActionResult> GetById(int id)
@@ -42,6 +44,7 @@ namespace NABD.Controllers
             var patient = await patientrepo.GetById(id);
             return Ok(patient);
         }
+
         [HttpGet]
         [Route("ByName/{name}")]
         public async Task<IActionResult> GetByName(string name)
@@ -49,6 +52,7 @@ namespace NABD.Controllers
             var patient = await patientrepo.GetByName(name);
             return Ok(patient);
         }
+
         [HttpDelete]
         [Route("{id}")]
         public async Task<IActionResult> Delete(int id)
@@ -121,7 +125,6 @@ namespace NABD.Controllers
 
             return Ok(reportsDto);
         }
-
 
         [HttpGet]
         [Route("{id}/details")]

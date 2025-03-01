@@ -12,8 +12,8 @@ using NABD.Data;
 namespace NABD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250228072703_Initial")]
-    partial class Initial
+    [Migration("20250301111640_addemails")]
+    partial class addemails
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -246,6 +246,46 @@ namespace NABD.Migrations
                     b.ToTable("AspNetUserTokens", (string)null);
                 });
 
+            modelBuilder.Entity("NABD.Models.Domain.Doctor", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("PersonalImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SSN")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<string>("Specialization")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("Doctors");
+                });
+
             modelBuilder.Entity("NABD.Models.Domain.Emergency", b =>
                 {
                     b.Property<int>("Id")
@@ -253,6 +293,9 @@ namespace NABD.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("int");
 
                     b.Property<DateTime>("EmergencyDate")
                         .HasColumnType("datetime2");
@@ -265,7 +308,7 @@ namespace NABD.Migrations
                     b.Property<int?>("GuardianId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MedicalStaffId")
+                    b.Property<int?>("NurseId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PatientId")
@@ -276,9 +319,11 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DoctorId");
+
                     b.HasIndex("GuardianId");
 
-                    b.HasIndex("MedicalStaffId");
+                    b.HasIndex("NurseId");
 
                     b.HasIndex("PatientId");
 
@@ -294,6 +339,10 @@ namespace NABD.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -346,45 +395,6 @@ namespace NABD.Migrations
                     b.ToTable("MedicalHistory");
                 });
 
-            modelBuilder.Entity("NABD.Models.Domain.MedicalStaff", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("Discriminator")
-                        .IsRequired()
-                        .HasMaxLength(13)
-                        .HasColumnType("nvarchar(13)");
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.Property<byte[]>("PersonalImage")
-                        .HasColumnType("varbinary(max)");
-
-                    b.Property<string>("Role")
-                        .IsRequired()
-                        .HasMaxLength(50)
-                        .HasColumnType("nvarchar(50)");
-
-                    b.Property<int>("SSN")
-                        .HasMaxLength(20)
-                        .HasColumnType("int");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("MedicalStaff");
-
-                    b.HasDiscriminator().HasValue("MedicalStaff");
-
-                    b.UseTphMappingStrategy();
-                });
-
             modelBuilder.Entity("NABD.Models.Domain.Notification", b =>
                 {
                     b.Property<int>("Id")
@@ -396,16 +406,19 @@ namespace NABD.Migrations
                     b.Property<DateTime>("Date")
                         .HasColumnType("datetime2");
 
-                    b.Property<int?>("GuardianId")
+                    b.Property<int?>("DoctorId")
                         .HasColumnType("int");
 
-                    b.Property<int?>("MedicalStaffId")
+                    b.Property<int?>("GuardianId")
                         .HasColumnType("int");
 
                     b.Property<string>("Message")
                         .IsRequired()
                         .HasMaxLength(500)
                         .HasColumnType("nvarchar(500)");
+
+                    b.Property<int?>("NurseId")
+                        .HasColumnType("int");
 
                     b.Property<int?>("PatientId")
                         .HasColumnType("int");
@@ -421,15 +434,60 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
+                    b.HasIndex("DoctorId");
+
                     b.HasIndex("GuardianId");
 
-                    b.HasIndex("MedicalStaffId");
+                    b.HasIndex("NurseId");
 
                     b.HasIndex("PatientId");
 
                     b.HasIndex("ToolId");
 
                     b.ToTable("Notifications");
+                });
+
+            modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int?>("DoctorId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("nvarchar(100)");
+
+                    b.Property<byte[]>("PersonalImage")
+                        .HasColumnType("varbinary(max)");
+
+                    b.Property<string>("Role")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<string>("SSN")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<int>("Shift")
+                        .HasColumnType("int");
+
+                    b.Property<string>("Ward")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("DoctorId");
+
+                    b.ToTable("Nurses");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Patient", b =>
@@ -442,6 +500,10 @@ namespace NABD.Migrations
 
                     b.Property<DateTime>("BirthDate")
                         .HasColumnType("datetime2");
+
+                    b.Property<string>("Email")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Gender")
                         .IsRequired()
@@ -481,7 +543,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("PatientDoctor");
+                    b.ToTable("PatientDoctors");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.PatientGuardian", b =>
@@ -496,7 +558,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("GuardianId");
 
-                    b.ToTable("PatientGuardian");
+                    b.ToTable("PatientGuardians");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Report", b =>
@@ -507,7 +569,7 @@ namespace NABD.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
-                    b.Property<int?>("MedicalStaffId")
+                    b.Property<int?>("DoctorId")
                         .HasColumnType("int");
 
                     b.Property<int?>("PatientId")
@@ -523,7 +585,7 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("MedicalStaffId");
+                    b.HasIndex("DoctorId");
 
                     b.HasIndex("PatientId");
 
@@ -565,37 +627,6 @@ namespace NABD.Migrations
                         .HasFilter("[PatientId] IS NOT NULL");
 
                     b.ToTable("Tools");
-                });
-
-            modelBuilder.Entity("NABD.Models.Domain.Doctor", b =>
-                {
-                    b.HasBaseType("NABD.Models.Domain.MedicalStaff");
-
-                    b.Property<string>("Specialization")
-                        .IsRequired()
-                        .HasMaxLength(100)
-                        .HasColumnType("nvarchar(100)");
-
-                    b.HasDiscriminator().HasValue("Doctor");
-                });
-
-            modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
-                {
-                    b.HasBaseType("NABD.Models.Domain.MedicalStaff");
-
-                    b.Property<int?>("DoctorId")
-                        .HasColumnType("int");
-
-                    b.Property<int>("Shift")
-                        .HasColumnType("int");
-
-                    b.Property<string>("Ward")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasIndex("DoctorId");
-
-                    b.HasDiscriminator().HasValue("Nurse");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -651,14 +682,19 @@ namespace NABD.Migrations
 
             modelBuilder.Entity("NABD.Models.Domain.Emergency", b =>
                 {
+                    b.HasOne("NABD.Models.Domain.Doctor", "Doctor")
+                        .WithMany("Emergencies")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NABD.Models.Domain.Guardian", "Guardian")
                         .WithMany("Emergencies")
                         .HasForeignKey("GuardianId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("NABD.Models.Domain.MedicalStaff", "MedicalStaff")
+                    b.HasOne("NABD.Models.Domain.Nurse", "Nurse")
                         .WithMany("Emergencies")
-                        .HasForeignKey("MedicalStaffId")
+                        .HasForeignKey("NurseId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("NABD.Models.Domain.Patient", "Patient")
@@ -671,9 +707,11 @@ namespace NABD.Migrations
                         .HasForeignKey("ToolId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Doctor");
+
                     b.Navigation("Guardian");
 
-                    b.Navigation("MedicalStaff");
+                    b.Navigation("Nurse");
 
                     b.Navigation("Patient");
 
@@ -693,14 +731,19 @@ namespace NABD.Migrations
 
             modelBuilder.Entity("NABD.Models.Domain.Notification", b =>
                 {
+                    b.HasOne("NABD.Models.Domain.Doctor", "Doctor")
+                        .WithMany("Notifications")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
                     b.HasOne("NABD.Models.Domain.Guardian", "Guardian")
                         .WithMany("Notifications")
                         .HasForeignKey("GuardianId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.HasOne("NABD.Models.Domain.MedicalStaff", "MedicalStaff")
+                    b.HasOne("NABD.Models.Domain.Nurse", "Nurse")
                         .WithMany("Notifications")
-                        .HasForeignKey("MedicalStaffId")
+                        .HasForeignKey("NurseId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("NABD.Models.Domain.Patient", "Patient")
@@ -713,13 +756,25 @@ namespace NABD.Migrations
                         .HasForeignKey("ToolId")
                         .OnDelete(DeleteBehavior.Restrict);
 
+                    b.Navigation("Doctor");
+
                     b.Navigation("Guardian");
 
-                    b.Navigation("MedicalStaff");
+                    b.Navigation("Nurse");
 
                     b.Navigation("Patient");
 
                     b.Navigation("Tool");
+                });
+
+            modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
+                {
+                    b.HasOne("NABD.Models.Domain.Doctor", "Doctor")
+                        .WithMany("Nurses")
+                        .HasForeignKey("DoctorId")
+                        .OnDelete(DeleteBehavior.Restrict);
+
+                    b.Navigation("Doctor");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.PatientDoctor", b =>
@@ -762,9 +817,9 @@ namespace NABD.Migrations
 
             modelBuilder.Entity("NABD.Models.Domain.Report", b =>
                 {
-                    b.HasOne("NABD.Models.Domain.MedicalStaff", "MedicalStaff")
+                    b.HasOne("NABD.Models.Domain.Doctor", "Doctor")
                         .WithMany("Reports")
-                        .HasForeignKey("MedicalStaffId")
+                        .HasForeignKey("DoctorId")
                         .OnDelete(DeleteBehavior.Restrict);
 
                     b.HasOne("NABD.Models.Domain.Patient", "Patient")
@@ -772,7 +827,7 @@ namespace NABD.Migrations
                         .HasForeignKey("PatientId")
                         .OnDelete(DeleteBehavior.Restrict);
 
-                    b.Navigation("MedicalStaff");
+                    b.Navigation("Doctor");
 
                     b.Navigation("Patient");
                 });
@@ -787,14 +842,17 @@ namespace NABD.Migrations
                     b.Navigation("Patient");
                 });
 
-            modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
+            modelBuilder.Entity("NABD.Models.Domain.Doctor", b =>
                 {
-                    b.HasOne("NABD.Models.Domain.Doctor", "Doctor")
-                        .WithMany("Nurses")
-                        .HasForeignKey("DoctorId")
-                        .OnDelete(DeleteBehavior.Restrict);
+                    b.Navigation("Emergencies");
 
-                    b.Navigation("Doctor");
+                    b.Navigation("Notifications");
+
+                    b.Navigation("Nurses");
+
+                    b.Navigation("PatientDoctors");
+
+                    b.Navigation("Reports");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Guardian", b =>
@@ -806,13 +864,11 @@ namespace NABD.Migrations
                     b.Navigation("PatientGuardians");
                 });
 
-            modelBuilder.Entity("NABD.Models.Domain.MedicalStaff", b =>
+            modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
                 {
                     b.Navigation("Emergencies");
 
                     b.Navigation("Notifications");
-
-                    b.Navigation("Reports");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Patient", b =>
@@ -839,13 +895,6 @@ namespace NABD.Migrations
                     b.Navigation("Emergencies");
 
                     b.Navigation("Notifications");
-                });
-
-            modelBuilder.Entity("NABD.Models.Domain.Doctor", b =>
-                {
-                    b.Navigation("Nurses");
-
-                    b.Navigation("PatientDoctors");
                 });
 #pragma warning restore 612, 618
         }

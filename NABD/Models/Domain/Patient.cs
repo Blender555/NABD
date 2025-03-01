@@ -14,6 +14,8 @@ namespace NABD.Models.Domain
         public DateTime BirthDate { get; set; }
         [Required]
         public string Gender { get; set; }
+        [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$", ErrorMessage = "Invalid Email Format")]
+        public string Email { get; set; }
         [Required,Phone]
         public string PhoneNumber { get; set; }
         public byte[]? PersonalImage { get; set; }

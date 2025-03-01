@@ -9,6 +9,8 @@ using System.Text;
 using System.Text.Json.Serialization;
 using NABD.Repositores;
 using Microsoft.AspNetCore.Hosting;
+using NABD.Areas.Identity;
+using NABD.Helpers;
 
 namespace GraduationProject
 {
@@ -25,16 +27,18 @@ namespace GraduationProject
           );
 
             builder.Services.AddAuthorization();
-            builder.Services.AddIdentityApiEndpoints<IdentityUser>()
+
+            builder.Services.AddIdentityApiEndpoints<ApplicationUser>()
                 .AddEntityFrameworkStores<ApplicationDbContext>();
 
             builder.Services.AddScoped<IPatientRepository, PatientRepository>();
-            //builder.Services.AddScoped<IMedicalStaffRepository, MedicalStaffRepository>();
-            //builder.Services.AddScoped<IGurdianRepository, GurdianRepository>();
-            //builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
-            //builder.Services.AddScoped<IReportRepsitory, ReportRepository>();
-            //builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
-            //builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
+            builder.Services.AddScoped<IGuardianRepository, GuardianRepository>();
+            builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
+            builder.Services.AddScoped<INurseRepository, NurseRepository>();
+            builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
+            builder.Services.AddScoped<IReportRepository, ReportRepository>();
+            builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
+            builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
             builder.Services.AddAutoMapper(typeof(Program));
 
@@ -43,9 +47,9 @@ namespace GraduationProject
                 options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // This causes $id and $values
             });
 
-            builder.Services.AddIdentityCore<IdentityUser>()
+            builder.Services.AddIdentityCore<ApplicationUser>()
                 .AddRoles<IdentityRole>()
-                .AddTokenProvider<DataProtectorTokenProvider<IdentityUser>>("NABD")
+                .AddTokenProvider<DataProtectorTokenProvider<ApplicationUser>>("NABD")
                 .AddEntityFrameworkStores<ApplicationDbContext>()
                 .AddDefaultTokenProviders();
 
@@ -59,9 +63,13 @@ namespace GraduationProject
                 options.Password.RequiredUniqueChars = 1;
             });
 
+            builder.Services.Configure<JWT>(builder.Configuration.GetSection("Jwt"));
+
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             .AddJwtBearer(options =>
             {
+                options.RequireHttpsMetadata = false;
+                options.SaveToken = false;
                 options.TokenValidationParameters = new TokenValidationParameters
                 {
                     AuthenticationType = "Jwt",
@@ -80,14 +88,55 @@ namespace GraduationProject
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "NABD API", Version = "v1" });
+                options.SwaggerDoc("v1", new OpenApiInfo
+                {
+                    Version = "v1",
+                    Title = "NABD API",
+                    Description = "Final Project",
+                    TermsOfService = new Uri("https://www.google.com"),
+                    Contact = new OpenApiContact
+                    {
+                        Name = "Shady",
+                        Email = "elsharkawy.shadyahmed@gmail.com"
+                    },
+                    License = new OpenApiLicense
+                    {
+                        Name = "My License",
+                        Url = new Uri("https://www.google.com")
+                    }
+                });
+                options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+                {
+                    Name = "Authorization",
+                    Type = SecuritySchemeType.ApiKey,
+                    Scheme = "Bearer",
+                    BearerFormat = "JWT",
+                    In = ParameterLocation.Header,
+                    Description = "Enter your JWT key"
+                });
+                options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                },
+                Name = "Bearer",
+                In =ParameterLocation.Header
+            },
+            new List<string>()
+        }
+    });
             });
 
 
 
             var app = builder.Build();
 
-            app.MapIdentityApi<IdentityUser>();
+            app.MapIdentityApi<ApplicationUser>();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())
@@ -95,9 +144,12 @@ namespace GraduationProject
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
+            
+            app.UseSwagger();
+            app.UseSwaggerUI();
 
             app.UseHttpsRedirection();
-
+            app.UseAuthentication();
             app.UseAuthorization();
 
 

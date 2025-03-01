@@ -53,6 +53,23 @@ namespace NABD.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Doctors",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SSN = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Specialization = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Doctors", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Guardians",
                 columns: table => new
                 {
@@ -65,33 +82,6 @@ namespace NABD.Migrations
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Guardians", x => x.Id);
-                });
-
-            migrationBuilder.CreateTable(
-                name: "MedicalStaff",
-                columns: table => new
-                {
-                    Id = table.Column<int>(type: "int", nullable: false)
-                        .Annotation("SqlServer:Identity", "1, 1"),
-                    SSN = table.Column<int>(type: "int", maxLength: 20, nullable: false),
-                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
-                    PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
-                    Discriminator = table.Column<string>(type: "nvarchar(13)", maxLength: 13, nullable: false),
-                    Specialization = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: true),
-                    Ward = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Shift = table.Column<int>(type: "int", nullable: true),
-                    DoctorId = table.Column<int>(type: "int", nullable: true)
-                },
-                constraints: table =>
-                {
-                    table.PrimaryKey("PK_MedicalStaff", x => x.Id);
-                    table.ForeignKey(
-                        name: "FK_MedicalStaff_MedicalStaff_DoctorId",
-                        column: x => x.DoctorId,
-                        principalTable: "MedicalStaff",
-                        principalColumn: "Id",
-                        onDelete: ReferentialAction.Restrict);
                 });
 
             migrationBuilder.CreateTable(
@@ -219,6 +209,31 @@ namespace NABD.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "Nurses",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    SSN = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    Ward = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Shift = table.Column<int>(type: "int", nullable: false),
+                    DoctorId = table.Column<int>(type: "int", nullable: true)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_Nurses", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Nurses_Doctors_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "MedicalHistory",
                 columns: table => new
                 {
@@ -241,7 +256,7 @@ namespace NABD.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PatientDoctor",
+                name: "PatientDoctors",
                 columns: table => new
                 {
                     PatientId = table.Column<int>(type: "int", nullable: false),
@@ -249,15 +264,15 @@ namespace NABD.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientDoctor", x => new { x.PatientId, x.DoctorId });
+                    table.PrimaryKey("PK_PatientDoctors", x => new { x.PatientId, x.DoctorId });
                     table.ForeignKey(
-                        name: "FK_PatientDoctor_MedicalStaff_DoctorId",
+                        name: "FK_PatientDoctors_Doctors_DoctorId",
                         column: x => x.DoctorId,
-                        principalTable: "MedicalStaff",
+                        principalTable: "Doctors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PatientDoctor_Patients_PatientId",
+                        name: "FK_PatientDoctors_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "Id",
@@ -265,7 +280,7 @@ namespace NABD.Migrations
                 });
 
             migrationBuilder.CreateTable(
-                name: "PatientGuardian",
+                name: "PatientGuardians",
                 columns: table => new
                 {
                     PatientId = table.Column<int>(type: "int", nullable: false),
@@ -273,15 +288,15 @@ namespace NABD.Migrations
                 },
                 constraints: table =>
                 {
-                    table.PrimaryKey("PK_PatientGuardian", x => new { x.PatientId, x.GuardianId });
+                    table.PrimaryKey("PK_PatientGuardians", x => new { x.PatientId, x.GuardianId });
                     table.ForeignKey(
-                        name: "FK_PatientGuardian_Guardians_GuardianId",
+                        name: "FK_PatientGuardians_Guardians_GuardianId",
                         column: x => x.GuardianId,
                         principalTable: "Guardians",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Cascade);
                     table.ForeignKey(
-                        name: "FK_PatientGuardian_Patients_PatientId",
+                        name: "FK_PatientGuardians_Patients_PatientId",
                         column: x => x.PatientId,
                         principalTable: "Patients",
                         principalColumn: "Id",
@@ -297,15 +312,15 @@ namespace NABD.Migrations
                     UploadDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     ReportDetails = table.Column<string>(type: "nvarchar(1000)", maxLength: 1000, nullable: false),
                     PatientId = table.Column<int>(type: "int", nullable: true),
-                    MedicalStaffId = table.Column<int>(type: "int", nullable: true)
+                    DoctorId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Reports", x => x.Id);
                     table.ForeignKey(
-                        name: "FK_Reports_MedicalStaff_MedicalStaffId",
-                        column: x => x.MedicalStaffId,
-                        principalTable: "MedicalStaff",
+                        name: "FK_Reports_Doctors_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctors",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -350,12 +365,19 @@ namespace NABD.Migrations
                     EmergencyDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     PatientId = table.Column<int>(type: "int", nullable: true),
                     ToolId = table.Column<int>(type: "int", nullable: true),
-                    MedicalStaffId = table.Column<int>(type: "int", nullable: true),
+                    DoctorId = table.Column<int>(type: "int", nullable: true),
+                    NurseId = table.Column<int>(type: "int", nullable: true),
                     GuardianId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Emergencies", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Emergencies_Doctors_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Emergencies_Guardians_GuardianId",
                         column: x => x.GuardianId,
@@ -363,9 +385,9 @@ namespace NABD.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Emergencies_MedicalStaff_MedicalStaffId",
-                        column: x => x.MedicalStaffId,
-                        principalTable: "MedicalStaff",
+                        name: "FK_Emergencies_Nurses_NurseId",
+                        column: x => x.NurseId,
+                        principalTable: "Nurses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -394,12 +416,19 @@ namespace NABD.Migrations
                     Status = table.Column<int>(type: "int", nullable: false),
                     PatientId = table.Column<int>(type: "int", nullable: true),
                     ToolId = table.Column<int>(type: "int", nullable: true),
-                    MedicalStaffId = table.Column<int>(type: "int", nullable: true),
+                    DoctorId = table.Column<int>(type: "int", nullable: true),
+                    NurseId = table.Column<int>(type: "int", nullable: true),
                     GuardianId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
                     table.PrimaryKey("PK_Notifications", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_Notifications_Doctors_DoctorId",
+                        column: x => x.DoctorId,
+                        principalTable: "Doctors",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Notifications_Guardians_GuardianId",
                         column: x => x.GuardianId,
@@ -407,9 +436,9 @@ namespace NABD.Migrations
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
-                        name: "FK_Notifications_MedicalStaff_MedicalStaffId",
-                        column: x => x.MedicalStaffId,
-                        principalTable: "MedicalStaff",
+                        name: "FK_Notifications_Nurses_NurseId",
+                        column: x => x.NurseId,
+                        principalTable: "Nurses",
                         principalColumn: "Id",
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
@@ -476,14 +505,19 @@ namespace NABD.Migrations
                 filter: "[NormalizedUserName] IS NOT NULL");
 
             migrationBuilder.CreateIndex(
+                name: "IX_Emergencies_DoctorId",
+                table: "Emergencies",
+                column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Emergencies_GuardianId",
                 table: "Emergencies",
                 column: "GuardianId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Emergencies_MedicalStaffId",
+                name: "IX_Emergencies_NurseId",
                 table: "Emergencies",
-                column: "MedicalStaffId");
+                column: "NurseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Emergencies_PatientId",
@@ -502,8 +536,8 @@ namespace NABD.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_MedicalStaff_DoctorId",
-                table: "MedicalStaff",
+                name: "IX_Notifications_DoctorId",
+                table: "Notifications",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
@@ -512,9 +546,9 @@ namespace NABD.Migrations
                 column: "GuardianId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Notifications_MedicalStaffId",
+                name: "IX_Notifications_NurseId",
                 table: "Notifications",
-                column: "MedicalStaffId");
+                column: "NurseId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Notifications_PatientId",
@@ -527,19 +561,24 @@ namespace NABD.Migrations
                 column: "ToolId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PatientDoctor_DoctorId",
-                table: "PatientDoctor",
+                name: "IX_Nurses_DoctorId",
+                table: "Nurses",
                 column: "DoctorId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_PatientGuardian_GuardianId",
-                table: "PatientGuardian",
+                name: "IX_PatientDoctors_DoctorId",
+                table: "PatientDoctors",
+                column: "DoctorId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_PatientGuardians_GuardianId",
+                table: "PatientGuardians",
                 column: "GuardianId");
 
             migrationBuilder.CreateIndex(
-                name: "IX_Reports_MedicalStaffId",
+                name: "IX_Reports_DoctorId",
                 table: "Reports",
-                column: "MedicalStaffId");
+                column: "DoctorId");
 
             migrationBuilder.CreateIndex(
                 name: "IX_Reports_PatientId",
@@ -582,10 +621,10 @@ namespace NABD.Migrations
                 name: "Notifications");
 
             migrationBuilder.DropTable(
-                name: "PatientDoctor");
+                name: "PatientDoctors");
 
             migrationBuilder.DropTable(
-                name: "PatientGuardian");
+                name: "PatientGuardians");
 
             migrationBuilder.DropTable(
                 name: "Reports");
@@ -597,13 +636,16 @@ namespace NABD.Migrations
                 name: "AspNetUsers");
 
             migrationBuilder.DropTable(
+                name: "Nurses");
+
+            migrationBuilder.DropTable(
                 name: "Tools");
 
             migrationBuilder.DropTable(
                 name: "Guardians");
 
             migrationBuilder.DropTable(
-                name: "MedicalStaff");
+                name: "Doctors");
 
             migrationBuilder.DropTable(
                 name: "Patients");
