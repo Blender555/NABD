@@ -8,23 +8,22 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
 using NABD.Repositores;
-using Microsoft.AspNetCore.Hosting;
 using NABD.Areas.Identity;
 using NABD.Helpers;
-
+using NABD.MQTT;
 namespace GraduationProject
 {
     public class Program
-    {
+    {     
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
-
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
           options.UseSqlServer(builder.Configuration.GetConnectionString("NABDConnString"))
           );
+            builder.Services.AddHostedService<MQTTBackgroundService>();
 
             builder.Services.AddAuthorization();
 

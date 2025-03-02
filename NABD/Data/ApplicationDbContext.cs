@@ -8,6 +8,10 @@ namespace NABD.Data
 {
     public class ApplicationDbContext : IdentityDbContext<ApplicationUser>
     {
+        public ApplicationDbContext()
+        {
+        }
+
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
         {
 
@@ -23,6 +27,7 @@ namespace NABD.Data
         public DbSet<Tool> Tools { get; set; }
         public DbSet<PatientGuardian> PatientGuardians { get; set; }
         public DbSet<PatientDoctor> PatientDoctors { get; set; }
+        public DbSet<MQTTMessage> MQTTMessages { get; set; }
 
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -156,6 +161,13 @@ namespace NABD.Data
                 .HasOne(n => n.Nurse)
                 .WithMany(ms => ms.Notifications)
                 .HasForeignKey(n => n.NurseId)
+                .OnDelete(DeleteBehavior.Restrict);
+
+            // Tool - MqttMessage 1:M Relationship
+            modelBuilder.Entity<MQTTMessage>()
+                .HasOne(n => n.Tool)
+                .WithMany(t => t.MQTTMessages)
+                .HasForeignKey(n => n.ToolId)
                 .OnDelete(DeleteBehavior.Restrict);
 
 
