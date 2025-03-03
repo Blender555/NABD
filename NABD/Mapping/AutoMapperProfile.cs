@@ -49,9 +49,9 @@ namespace NABD.Mapping
             // Emergency Mappings
             //CreateMap<Emergency, EmergencyDto>().ReverseMap();
 
-            // Tool Mappings
-            //CreateMap<Tool, ToolDto>().ReverseMap();
-            //CreateMap<Tool, AddToolDto>().ReverseMap();
+            //Tool Mappings
+            CreateMap<Tool, ToolDto>().ReverseMap();
+            CreateMap<CreateToolDto, Tool>().ReverseMap();
 
         }
     }

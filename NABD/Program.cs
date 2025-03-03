@@ -37,6 +37,7 @@ namespace GraduationProject
             builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
+            builder.Services.AddScoped<IToolRepository, ToolRepository>();
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
             builder.Services.AddAutoMapper(typeof(Program));
