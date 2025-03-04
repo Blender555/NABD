@@ -15,10 +15,10 @@ namespace NABD.Repositores
 
         public async Task<IEnumerable<Tool>> GetAllAsync()
         {
-            return await _dbContext.Tools.Include(t => t.Patient).ToListAsync();
+            return await _dbContext.Tools.Include(t => t.Patient).ToListAsync() ?? Enumerable.Empty<Tool>();
         }
 
-        public async Task<Tool> GetByIdAsync(int id)
+        public async Task<Tool?> GetByIdAsync(int id)
         {
             return await _dbContext.Tools.Include(t => t.Patient)
                                          .FirstOrDefaultAsync(t => t.Id == id);
@@ -31,19 +31,27 @@ namespace NABD.Repositores
             return tool;
         }
 
-        public async Task<Tool> UpdateAsync(int Id,Tool tool)
+        public async Task<Tool?> UpdateAsync(int Id, Tool tool)
         {
-            var existTool = await _dbContext.Tools.FirstOrDefaultAsync(x => x.Id == Id);
-            if (tool == null)
+            var existTool = await _dbContext.Tools.Include(t => t.MQTTMessages)
+                                                  .Include(t => t.Emergencies)
+                                                  .Include(t => t.Notifications)
+                                                  .FirstOrDefaultAsync(x => x.Id == Id);
+            if (existTool == null)
             {
                 return null;
             }
 
             existTool.QrCode = tool.QrCode;
             existTool.PatientId = tool.PatientId;
-            existTool.MQTTMessages = tool.MQTTMessages;
-            existTool.Emergencies = tool.Emergencies;
-            existTool.Notifications = tool.Notifications;
+            if (tool.MQTTMessages?.Any() == true)
+                existTool.MQTTMessages = tool.MQTTMessages;
+
+            if (tool.Emergencies?.Any() == true)
+                existTool.Emergencies = tool.Emergencies;
+
+            if (tool.Notifications?.Any() == true)
+                existTool.Notifications = tool.Notifications;
 
             await _dbContext.SaveChangesAsync();
             return existTool;

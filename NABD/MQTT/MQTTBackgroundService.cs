@@ -35,7 +35,7 @@ namespace NABD.MQTT
 
             _client.OnMessageReceived += async (sender, args) =>
             {
-                string topic = args.PublishMessage.Topic;
+                string? topic = args.PublishMessage.Topic;
                 string message = args.PublishMessage.PayloadAsString;
                 DateTime timestamp = DateTime.UtcNow;
 

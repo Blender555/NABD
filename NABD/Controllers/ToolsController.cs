@@ -20,7 +20,6 @@ namespace NABD.Controllers
             _mapper = mapper;
         }
 
-        // GET: api/Tool
         [HttpGet]
         public async Task<ActionResult<IEnumerable<ToolDto>>> GetTools()
         {
@@ -28,7 +27,6 @@ namespace NABD.Controllers
             return Ok(_mapper.Map<IEnumerable<ToolDto>>(tools));
         }
 
-        // GET: api/Tool/{id}
         [HttpGet("{id}")]
         public async Task<ActionResult<ToolDto>> GetTool(int id)
         {
@@ -40,7 +38,6 @@ namespace NABD.Controllers
             return Ok(_mapper.Map<ToolDto>(tool));
         }
 
-        // POST: api/Tool
         [HttpPost]
         public async Task<ActionResult<ToolDto>> CreateTool(CreateToolDto createToolDto)
         {
@@ -49,7 +46,6 @@ namespace NABD.Controllers
             return CreatedAtAction(nameof(GetTool), new { id = newTool.Id }, _mapper.Map<ToolDto>(newTool));
         }
 
-        // PUT: api/Tool/{id}
         [HttpPut("{id}")]
         public async Task<IActionResult> UpdateTool([FromRoute]int id, CreateToolDto updateToolDto)
         {
@@ -65,12 +61,11 @@ namespace NABD.Controllers
             return Ok(toolDto);
         }
 
-        // DELETE: api/Tool/{id}
         [HttpDelete("{id}")]
         public async Task<IActionResult> DeleteTool(int id)
         {
             bool deleted = await _toolRepository.DeleteAsync(id);
-            return deleted ? Ok("Gurdian deleted successfully") : NotFound();
+            return deleted ? Ok("Tool deleted successfully") : NotFound();
         }
     }
 }
