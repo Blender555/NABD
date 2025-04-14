@@ -24,7 +24,7 @@ namespace NABD.Controllers
         }
 
         [HttpPost("register")]
-        public async Task<IActionResult> Register([FromBody] Areas.Identity.Pages.Account.RegisterModel.InputModel model)
+        public async Task<IActionResult> Register([FromBody] Areas.InputModel model)
         {
             if (!ModelState.IsValid)
                 return BadRequest(ModelState);

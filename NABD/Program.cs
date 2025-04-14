@@ -38,9 +38,10 @@ namespace GraduationProject
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
             builder.Services.AddScoped<IToolRepository, ToolRepository>();
+
             builder.Services.AddAutoMapper(typeof(AutoMapperProfile));
 
-            builder.Services.AddAutoMapper(typeof(Program));
+            builder.Services.AddSignalR();
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
@@ -152,7 +153,7 @@ namespace GraduationProject
             app.UseAuthentication();
             app.UseAuthorization();
 
-
+            app.MapHub<NABD.Hubs.MQTTHub>("/mqttHub");
             app.MapControllers();
 
             app.Run();

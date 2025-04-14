@@ -97,8 +97,9 @@ namespace NABD.MQTT
                 var match = Regex.Match(message, @"Heart rate: (\d+\.?\d*) bpm, SpO2: (\d+\.?\d*)%");
                 if (match.Success)
                 {
-                    mqttData.HeartRate = int.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    mqttData.OxygenSaturation = int.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+                    mqttData.HeartRate = (int)float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
+                    mqttData.OxygenSaturation = (int)float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+
                 }
             }
             else if (topic == "sensor/temperature")
