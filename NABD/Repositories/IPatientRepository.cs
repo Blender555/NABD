@@ -1,7 +1,7 @@
 ﻿using NABD.Models.Domain;
 using NABD.DTO;
 
-namespace NABD.Repositores
+namespace NABD.Repositories
 {
     public interface IPatientRepository
     {

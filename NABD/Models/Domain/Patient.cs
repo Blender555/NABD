@@ -20,8 +20,8 @@ namespace NABD.Models.Domain
         public string PhoneNumber { get; set; }
         public byte[]? PersonalImage { get; set; }
 
-
-        public required Tool Tool { get; set; } //1:1
+        public int ToolId { get; set; }
+        public Tool Tool { get; set; } //1:1
         public required MedicalHistory MedicalHistory { get; set; } //1:1
         public ICollection<PatientDoctor> PatientDoctors { get; set; } = new HashSet<PatientDoctor>(); //M:M
         public ICollection<PatientGuardian> PatientGuardians { get; set; } = new HashSet<PatientGuardian>(); //M:M

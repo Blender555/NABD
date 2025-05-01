@@ -9,9 +9,8 @@ namespace NABD.Models.Domain
         public int Id { get; set; }
         [Required, StringLength(100)]
         public string QrCode { get; set; }
-
-        //TODO: Add a property to store the tool's status
-        //TODO: Make PatientId Not required
+        [Required]
+        public string SerialNumber { get; set; } 
 
         [ForeignKey(nameof(Patient))]
         public int? PatientId { get; set; }

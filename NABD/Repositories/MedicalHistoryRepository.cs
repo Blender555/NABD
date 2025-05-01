@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 using NABD.Data;
 using NABD.Models.Domain;
 
-namespace NABD.Repositores
+namespace NABD.Repositories
 {
     public class MedicalHistoryRepository : IMedicalHistoryRepository
     {

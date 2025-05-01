@@ -7,7 +7,7 @@ using Microsoft.IdentityModel.Tokens;
 using Microsoft.OpenApi.Models;
 using System.Text;
 using System.Text.Json.Serialization;
-using NABD.Repositores;
+using NABD.Repositories;
 using NABD.Areas.Identity;
 using NABD.Helpers;
 using NABD.MQTT;

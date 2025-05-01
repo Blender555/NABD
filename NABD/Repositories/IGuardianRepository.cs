@@ -1,7 +1,7 @@
 ﻿using NABD.DTO;
 using NABD.Models.Domain;
 
-namespace NABD.Repositores
+namespace NABD.Repositories
 {
     public interface IGuardianRepository
     {

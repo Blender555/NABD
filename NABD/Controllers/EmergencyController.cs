@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using NABD.Models.Domain;
-using NABD.Repositores;
+using NABD.Repositories;
 
 namespace NABD.Controllers
 {

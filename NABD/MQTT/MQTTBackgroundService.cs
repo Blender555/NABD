@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Text.RegularExpressions;
 using NABD.Models.Domain;
 using NABD.Data;
-using System.Globalization;
 using Microsoft.EntityFrameworkCore;
 
 namespace NABD.MQTT
@@ -14,6 +13,8 @@ namespace NABD.MQTT
     {
         private readonly IServiceScopeFactory _scopeFactory;
         private HiveMQClient? _client;
+
+        private readonly Dictionary<string, MQTTMessage> _deviceCache = new();
 
         public MQTTBackgroundService(IServiceScopeFactory scopeFactory)
         {
@@ -24,10 +25,10 @@ namespace NABD.MQTT
         {
             var options = new HiveMQClientOptions()
             {
-                Host = "fc8731aef5304f3aad37fa03be01e517.s1.eu.hivemq.cloud",
+                Host = "b1ae13f79d82453192bb9bcfecf0b214.s1.eu.hivemq.cloud",
                 Port = 8883,
-                UserName = "finalProject",
-                Password = "Fb123456",
+                UserName = "zugzwang",
+                Password = "12345678Ss",
                 UseTLS = true
             };
 
@@ -35,83 +36,90 @@ namespace NABD.MQTT
 
             _client.OnMessageReceived += async (sender, args) =>
             {
-                string? topic = args.PublishMessage.Topic;
-                string message = args.PublishMessage.PayloadAsString;
+                string topic = args.PublishMessage.Topic;
+                string payload = args.PublishMessage.PayloadAsString;
+                string sessionId = "default"; // Replace with actual session ID if needed
                 DateTime timestamp = DateTime.UtcNow;
 
-                // Set Default Values
-                int SpO2 = 98;
-                int HR = 70;
-                float Temp = 37.0f;
-                int ToolId = 1; // 🔹 Assign a ToolId (Modify based on your logic)
+                if (!_deviceCache.ContainsKey(sessionId))
+                    _deviceCache[sessionId] = new MQTTMessage();
 
-                // Parse and store data in the database
-                await SaveToDatabase(topic, message, timestamp, SpO2, HR, Temp, ToolId);
+                var data = _deviceCache[sessionId];
+                data.Topic = topic;
+                data.VitalDataTimestamp = timestamp;
+
+                switch (topic)
+                {
+                    case "device/device_ID":
+                        data.Message = $"ID: {payload}";
+                        break;
+                    case "device/serial_No":
+                        data.SerialNumber = payload;
+                        break;
+                    case "device/sensor/temperature":
+                        var tempMatch = Regex.Match(payload, @"Ambient: (\d+\.?\d*) °C, Object: (\d+\.?\d*) °C");
+                        if (tempMatch.Success)
+                        {
+                            data.BodyTemperature = float.Parse(tempMatch.Groups[2].Value);
+                        }
+                        break;
+                    case "device/sensor/heart_rate":
+                        var hrMatch = Regex.Match(payload, @"Heart rate: (\d+\.?\d*) bpm, SpO2: (\d+\.?\d*)%");
+                        if (hrMatch.Success)
+                        {
+                            data.HeartRate = int.Parse(hrMatch.Groups[1].Value);
+                            data.OxygenSaturation = int.Parse(hrMatch.Groups[2].Value);
+                        }
+                        break;
+                    case "device/sensor/spo2":
+                        if (int.TryParse(payload, out int spo2Val))
+                            data.OxygenSaturation = spo2Val;
+                        break;
+                }
+
+                if (!string.IsNullOrWhiteSpace(data.SerialNumber) &&
+                    data.HeartRate.HasValue && data.OxygenSaturation.HasValue && data.BodyTemperature.HasValue)
+                {
+                    data.Message = $"SN: {data.SerialNumber}, HR: {data.HeartRate}, SpO2: {data.OxygenSaturation}, Temp: {data.BodyTemperature}";
+                    await SaveDeviceDataAsync(data);
+                    _deviceCache.Remove(sessionId);
+                }
             };
 
             var connectResult = await _client.ConnectAsync().ConfigureAwait(false);
 
             if (connectResult.ReasonCode == HiveMQtt.MQTT5.ReasonCodes.ConnAckReasonCode.Success)
             {
-                await _client.SubscribeAsync("sensor/temperature").ConfigureAwait(false);
-                await _client.SubscribeAsync("sensor/heart_rate").ConfigureAwait(false);
+                await _client.SubscribeAsync("device/device_ID");
+                await _client.SubscribeAsync("device/serial_No");
+                await _client.SubscribeAsync("device/sensor/temperature");
+                await _client.SubscribeAsync("device/sensor/heart_rate");
+                await _client.SubscribeAsync("device/sensor/spo2");
             }
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(1000, stoppingToken);
+                await Task.Delay(10000, stoppingToken);
             }
 
             await _client.DisconnectAsync().ConfigureAwait(false);
         }
 
-        private async Task SaveToDatabase(string topic, string message, DateTime timestamp, int SpO2, int HR, float Temp, int ToolId)
+        private async Task SaveDeviceDataAsync(MQTTMessage message)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            // 🔹 Count total readings
-            int totalReadings = await db.MQTTMessages.CountAsync();
-
-            // 🔹 If more than 360, delete the oldest ones
-            if (totalReadings >= 360)
+            var tool = await db.Tools.FirstOrDefaultAsync(t => t.SerialNumber == message.SerialNumber);
+            if (tool == null)
             {
-                var oldestReadings = db.MQTTMessages.OrderBy(m => m.VitalDataTimestamp).Take(totalReadings - 360);
-                db.MQTTMessages.RemoveRange(oldestReadings);
-                await db.SaveChangesAsync();
+                Console.WriteLine($"Tool not found with SerialNumber = {message.SerialNumber}");
+                return;
             }
 
-            var mqttData = new MQTTMessage
-            {
-                Topic = topic,
-                Message = message,
-                VitalDataTimestamp = timestamp,
-                OxygenSaturation = SpO2,
-                HeartRate = HR,
-                BodyTemperature = Temp,
-                ToolId = ToolId // 🔹 Store the associated Tool
-            };
+            message.ToolId = tool.Id;
 
-            if (topic == "sensor/heart_rate")
-            {
-                var match = Regex.Match(message, @"Heart rate: (\d+\.?\d*) bpm, SpO2: (\d+\.?\d*)%");
-                if (match.Success)
-                {
-                    mqttData.HeartRate = (int)float.Parse(match.Groups[1].Value, CultureInfo.InvariantCulture);
-                    mqttData.OxygenSaturation = (int)float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-
-                }
-            }
-            else if (topic == "sensor/temperature")
-            {
-                var match = Regex.Match(message, @"Ambient: (\d+\.?\d*) °C, Object: (\d+\.?\d*) °C");
-                if (match.Success)
-                {
-                    mqttData.BodyTemperature = float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
-                }
-            }
-
-            db.MQTTMessages.Add(mqttData);
+            db.MQTTMessages.Add(message);
             await db.SaveChangesAsync();
         }
     }
