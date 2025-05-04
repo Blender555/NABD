@@ -17,22 +17,22 @@ namespace NABD.Repositories
             var Skipresult = (pageNumber - 1) * pageSize;
             return await dbContext.Guardians.Skip(Skipresult).Take(pageSize).ToListAsync();
         }
-        public async Task<Guardian> Create(Guardian guardian, int patientId)
+        public async Task<Guardian> Create(Guardian guardian, string patientSSN)
         {
-            var patient = await dbContext.Patients.FindAsync(patientId);
+            var patient = await dbContext.Patients.FirstOrDefaultAsync(p => p.SSN == patientSSN);
             if (patient == null)
             {
-                throw new Exception("Patient not found!");
+                throw new Exception("Patient with given SSN not found!");
             }
 
-            // Add the Guardian first
+            // Add the Guardian
             await dbContext.Guardians.AddAsync(guardian);
-            await dbContext.SaveChangesAsync(); // Save to get GuardianId
+            await dbContext.SaveChangesAsync();
 
-            // Create the relation in the join table
+            // Create the relationship
             var patientGuardian = new PatientGuardian
             {
-                PatientId = patientId,
+                PatientId = patient.Id,
                 GuardianId = guardian.Id
             };
 
@@ -41,6 +41,7 @@ namespace NABD.Repositories
 
             return guardian;
         }
+
         public async Task<Guardian?> GetById(int Id)
         {
             return await dbContext.Guardians.FirstOrDefaultAsync(x => x.Id == Id);

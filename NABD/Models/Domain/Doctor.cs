@@ -10,7 +10,7 @@ namespace NABD.Models.Domain
         [Required, StringLength(100)]
         public string Name { get; set; }
         [RegularExpression(@"^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$",ErrorMessage = "Invalid Email Format")]
-        public string Email { get; set; }
+        public string? Email { get; set; }
         [Required, StringLength(50)]
         public string Role { get; set; }
         public byte[]? PersonalImage { get; set; }

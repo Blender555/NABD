@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using NABD.Data;
 
@@ -11,9 +12,11 @@ using NABD.Data;
 namespace NABD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250503171900_doctoremailnull")]
+    partial class doctoremailnull
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -301,7 +304,7 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Doctors", (string)null);
+                    b.ToTable("Doctors");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Emergency", b =>
@@ -347,7 +350,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("ToolId");
 
-                    b.ToTable("Emergencies", (string)null);
+                    b.ToTable("Emergencies");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Guardian", b =>
@@ -378,7 +381,7 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Guardians", (string)null);
+                    b.ToTable("Guardians");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.MQTTMessage", b =>
@@ -420,7 +423,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("ToolId");
 
-                    b.ToTable("MQTTMessages", (string)null);
+                    b.ToTable("MQTTMessages");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.MedicalHistory", b =>
@@ -452,7 +455,7 @@ namespace NABD.Migrations
                     b.HasIndex("PatientId")
                         .IsUnique();
 
-                    b.ToTable("MedicalHistory", (string)null);
+                    b.ToTable("MedicalHistory");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Notification", b =>
@@ -504,7 +507,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("ToolId");
 
-                    b.ToTable("Notifications", (string)null);
+                    b.ToTable("Notifications");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Nurse", b =>
@@ -547,7 +550,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("Nurses", (string)null);
+                    b.ToTable("Nurses");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Patient", b =>
@@ -591,7 +594,7 @@ namespace NABD.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Patients", (string)null);
+                    b.ToTable("Patients");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.PatientDoctor", b =>
@@ -606,7 +609,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("DoctorId");
 
-                    b.ToTable("PatientDoctors", (string)null);
+                    b.ToTable("PatientDoctors");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.PatientGuardian", b =>
@@ -621,7 +624,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("GuardianId");
 
-                    b.ToTable("PatientGuardians", (string)null);
+                    b.ToTable("PatientGuardians");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Report", b =>
@@ -652,7 +655,7 @@ namespace NABD.Migrations
 
                     b.HasIndex("PatientId");
 
-                    b.ToTable("Reports", (string)null);
+                    b.ToTable("Reports");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Tool", b =>
@@ -681,7 +684,7 @@ namespace NABD.Migrations
                         .IsUnique()
                         .HasFilter("[PatientId] IS NOT NULL");
 
-                    b.ToTable("Tools", (string)null);
+                    b.ToTable("Tools");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>

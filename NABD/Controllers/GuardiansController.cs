@@ -44,13 +44,13 @@ namespace NABD.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> Create([FromBody] AddGuardianDto addGurdianDto,int patientId)
+        public async Task<IActionResult> Create([FromBody] AddGuardianDto addGurdianDto, [FromQuery] string patientSSN)
         {
             var guardian = mapper.Map<Guardian>(addGurdianDto);
-            await guardianRepository.Create(guardian, patientId);
+            var createdGuardian = await guardianRepository.Create(guardian, patientSSN);
 
-            var gurdiandto = mapper.Map<GuardianDto>(guardian);
-            return Ok(gurdiandto);
+            var guardianDto = mapper.Map<GuardianDto>(createdGuardian);
+            return Ok(guardian);
         }
 
         [HttpGet]

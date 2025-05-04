@@ -6,6 +6,7 @@ using System.Text.RegularExpressions;
 using NABD.Models.Domain;
 using NABD.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Globalization;
 
 namespace NABD.MQTT
 {
@@ -14,7 +15,12 @@ namespace NABD.MQTT
         private readonly IServiceScopeFactory _scopeFactory;
         private HiveMQClient? _client;
 
-        private readonly Dictionary<string, MQTTMessage> _deviceCache = new();
+        private string? _serialNumber;
+        private int? _deviceId;
+        private int? _heartRate;
+        private int? _spo2;
+        private float? _temperature;
+        private DateTime _lastMessageTimestamp;
 
         public MQTTBackgroundService(IServiceScopeFactory scopeFactory)
         {
@@ -23,7 +29,7 @@ namespace NABD.MQTT
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
-            var options = new HiveMQClientOptions()
+            var options = new HiveMQClientOptions
             {
                 Host = "b1ae13f79d82453192bb9bcfecf0b214.s1.eu.hivemq.cloud",
                 Port = 8883,
@@ -37,52 +43,54 @@ namespace NABD.MQTT
             _client.OnMessageReceived += async (sender, args) =>
             {
                 string topic = args.PublishMessage.Topic;
-                string payload = args.PublishMessage.PayloadAsString;
-                string sessionId = "default"; // Replace with actual session ID if needed
-                DateTime timestamp = DateTime.UtcNow;
-
-                if (!_deviceCache.ContainsKey(sessionId))
-                    _deviceCache[sessionId] = new MQTTMessage();
-
-                var data = _deviceCache[sessionId];
-                data.Topic = topic;
-                data.VitalDataTimestamp = timestamp;
+                string message = args.PublishMessage.PayloadAsString;
+                _lastMessageTimestamp = DateTime.UtcNow;
 
                 switch (topic)
                 {
                     case "device/device_ID":
-                        data.Message = $"ID: {payload}";
+                        if (int.TryParse(message, out int parsedId))
+                            _deviceId = parsedId;
                         break;
-                    case "device/serial_No":
-                        data.SerialNumber = payload;
-                        break;
-                    case "device/sensor/temperature":
-                        var tempMatch = Regex.Match(payload, @"Ambient: (\d+\.?\d*) °C, Object: (\d+\.?\d*) °C");
-                        if (tempMatch.Success)
-                        {
-                            data.BodyTemperature = float.Parse(tempMatch.Groups[2].Value);
-                        }
-                        break;
+
                     case "device/sensor/heart_rate":
-                        var hrMatch = Regex.Match(payload, @"Heart rate: (\d+\.?\d*) bpm, SpO2: (\d+\.?\d*)%");
-                        if (hrMatch.Success)
-                        {
-                            data.HeartRate = int.Parse(hrMatch.Groups[1].Value);
-                            data.OxygenSaturation = int.Parse(hrMatch.Groups[2].Value);
-                        }
+                        if (float.TryParse(message, out float parsedHr))
+                            _heartRate = (int)parsedHr;
                         break;
+
                     case "device/sensor/spo2":
-                        if (int.TryParse(payload, out int spo2Val))
-                            data.OxygenSaturation = spo2Val;
+                        if (float.TryParse(message, out float parsedSpO2))
+                            _spo2 = (int)parsedSpO2;
+                        break;
+
+                    case "device/sensor/temperature":
+                        var match = Regex.Match(message, @"Ambient:\s*(\d+\.?\d*)\s*°C,\s*Object:\s*(\d+\.?\d*)\s*°C");
+                        if (match.Success)
+                            _temperature = float.Parse(match.Groups[2].Value, CultureInfo.InvariantCulture);
+                        break;
+
+                    case "device/serial_No":
+                        _serialNumber = message;
                         break;
                 }
 
-                if (!string.IsNullOrWhiteSpace(data.SerialNumber) &&
-                    data.HeartRate.HasValue && data.OxygenSaturation.HasValue && data.BodyTemperature.HasValue)
+                // Check if all values are ready
+                if (_serialNumber != null && _deviceId.HasValue && _heartRate.HasValue && _spo2.HasValue && _temperature.HasValue)
                 {
-                    data.Message = $"SN: {data.SerialNumber}, HR: {data.HeartRate}, SpO2: {data.OxygenSaturation}, Temp: {data.BodyTemperature}";
-                    await SaveDeviceDataAsync(data);
-                    _deviceCache.Remove(sessionId);
+                    await SaveToDatabase(
+                        timestamp: _lastMessageTimestamp,
+                        serialNumber: _serialNumber,
+                        heartRate: _heartRate.Value,
+                        spo2: _spo2.Value,
+                        temperature: _temperature.Value
+                    );
+
+                    // Clear after save
+                    _serialNumber = null;
+                    _deviceId = null;
+                    _heartRate = null;
+                    _spo2 = null;
+                    _temperature = null;
                 }
             };
 
@@ -91,35 +99,41 @@ namespace NABD.MQTT
             if (connectResult.ReasonCode == HiveMQtt.MQTT5.ReasonCodes.ConnAckReasonCode.Success)
             {
                 await _client.SubscribeAsync("device/device_ID");
-                await _client.SubscribeAsync("device/serial_No");
-                await _client.SubscribeAsync("device/sensor/temperature");
                 await _client.SubscribeAsync("device/sensor/heart_rate");
                 await _client.SubscribeAsync("device/sensor/spo2");
+                await _client.SubscribeAsync("device/sensor/temperature");
+                await _client.SubscribeAsync("device/serial_No");
             }
 
             while (!stoppingToken.IsCancellationRequested)
             {
-                await Task.Delay(10000, stoppingToken);
+                await Task.Delay(1000, stoppingToken);
             }
 
             await _client.DisconnectAsync().ConfigureAwait(false);
         }
 
-        private async Task SaveDeviceDataAsync(MQTTMessage message)
+        private async Task SaveToDatabase(DateTime timestamp, string serialNumber, int heartRate, int spo2, float temperature)
         {
             using var scope = _scopeFactory.CreateScope();
             var db = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
 
-            var tool = await db.Tools.FirstOrDefaultAsync(t => t.SerialNumber == message.SerialNumber);
-            if (tool == null)
+            // Lookup the Tool by SerialNumber
+            var tool = await db.Tools.FirstOrDefaultAsync(t => t.SerialNumber == serialNumber);
+
+            var mqttData = new MQTTMessage
             {
-                Console.WriteLine($"Tool not found with SerialNumber = {message.SerialNumber}");
-                return;
-            }
+                Topic = "aggregated",
+                Message = $"HR: {heartRate}, SpO2: {spo2}, Temp: {temperature}, SN: {serialNumber}, ID: {tool.Id}",
+                VitalDataTimestamp = timestamp,
+                HeartRate = heartRate,
+                OxygenSaturation = spo2,
+                BodyTemperature = temperature,
+                SerialNumber = serialNumber,
+                ToolId = tool.Id
+            };
 
-            message.ToolId = tool.Id;
-
-            db.MQTTMessages.Add(message);
+            db.MQTTMessages.Add(mqttData);
             await db.SaveChangesAsync();
         }
     }
