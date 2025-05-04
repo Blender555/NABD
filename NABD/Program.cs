@@ -84,6 +84,8 @@ namespace GraduationProject
                 };
             });
 
+            builder.Services.AddRazorPages();
+
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
             builder.Services.AddEndpointsApiExplorer();
@@ -138,6 +140,7 @@ namespace GraduationProject
             var app = builder.Build();
 
             app.MapIdentityApi<ApplicationUser>();
+            app.MapRazorPages();
 
             // Configure the HTTP request pipeline.
             if (app.Environment.IsDevelopment())

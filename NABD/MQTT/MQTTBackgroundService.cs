@@ -38,6 +38,15 @@ namespace NABD.MQTT
                 UseTLS = true
             };
 
+            var options2 = new HiveMQClientOptions
+            {
+                Host = "fc8731aef5304f3aad37fa03be01e517.s1.eu.hivemq.cloud",
+                Port = 8883,
+                UserName = "finalProject",
+                Password = "Fb123456",
+                UseTLS = true
+            };
+
             _client = new HiveMQClient(options);
 
             _client.OnMessageReceived += async (sender, args) =>
