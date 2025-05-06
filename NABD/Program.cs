@@ -11,18 +11,21 @@ using NABD.Repositories;
 using NABD.Areas.Identity;
 using NABD.Helpers;
 using NABD.MQTT;
+
 namespace GraduationProject
 {
     public class Program
-    {     
+    {
         public static void Main(string[] args)
         {
             var builder = WebApplication.CreateBuilder(args);
 
             // Add services to the container.
             builder.Services.AddDbContext<ApplicationDbContext>(options =>
-          options.UseSqlServer(builder.Configuration.GetConnectionString("NABDConnString"))
-          );
+            options.UseSqlServer(builder.Configuration.GetConnectionString("NABDConnString"))
+            .LogTo(Console.WriteLine, LogLevel.Information)
+            );
+
             builder.Services.AddHostedService<MQTTBackgroundService>();
 
             builder.Services.AddAuthorization();
@@ -45,7 +48,7 @@ namespace GraduationProject
 
             builder.Services.AddControllers().AddJsonOptions(options =>
             {
-                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve; // This causes $id and $values
+                options.JsonSerializerOptions.ReferenceHandler = ReferenceHandler.Preserve;
             });
 
             builder.Services.AddIdentityCore<ApplicationUser>()
@@ -67,27 +70,27 @@ namespace GraduationProject
             builder.Services.Configure<JWT>(builder.Configuration.GetSection("Jwt"));
 
             builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-            .AddJwtBearer(options =>
-            {
-                options.RequireHttpsMetadata = false;
-                options.SaveToken = false;
-                options.TokenValidationParameters = new TokenValidationParameters
+                .AddJwtBearer(options =>
                 {
-                    AuthenticationType = "Jwt",
-                    ValidateIssuer = false,
-                    ValidateAudience = false,
-                    ValidateLifetime = true,
-                    ValidateIssuerSigningKey = true,
-                    ValidIssuer = builder.Configuration["Jwt:Issuer"],       
-                    ValidAudiences = new[] { builder.Configuration["Jwt:Audience"] },
-                    IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
-                };
-            });
+                    options.RequireHttpsMetadata = false;
+                    options.SaveToken = false;
+                    options.TokenValidationParameters = new TokenValidationParameters
+                    {
+                        AuthenticationType = "Jwt",
+                        ValidateIssuer = false,
+                        ValidateAudience = false,
+                        ValidateLifetime = true,
+                        ValidateIssuerSigningKey = true,
+                        ValidIssuer = builder.Configuration["Jwt:Issuer"],
+                        ValidAudiences = new[] { builder.Configuration["Jwt:Audience"] },
+                        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Key"]))
+                    };
+                });
 
             builder.Services.AddRazorPages();
 
             builder.Services.AddControllers();
-            // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
+
             builder.Services.AddEndpointsApiExplorer();
             builder.Services.AddSwaggerGen(options =>
             {
@@ -108,6 +111,7 @@ namespace GraduationProject
                         Url = new Uri("https://www.google.com")
                     }
                 });
+
                 options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
                 {
                     Name = "Authorization",
@@ -117,25 +121,24 @@ namespace GraduationProject
                     In = ParameterLocation.Header,
                     Description = "Enter your JWT key"
                 });
+
                 options.AddSecurityRequirement(new OpenApiSecurityRequirement
-    {
-        {
-            new OpenApiSecurityScheme
-            {
-                Reference = new OpenApiReference
                 {
-                    Type = ReferenceType.SecurityScheme,
-                    Id = "Bearer"
-                },
-                Name = "Bearer",
-                In =ParameterLocation.Header
-            },
-            new List<string>()
-        }
-    });
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference
+                            {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "Bearer"
+                            },
+                            Name = "Bearer",
+                            In = ParameterLocation.Header
+                        },
+                        new List<string>()
+                    }
+                });
             });
-
-
 
             var app = builder.Build();
 
@@ -148,9 +151,11 @@ namespace GraduationProject
                 app.UseSwagger();
                 app.UseSwaggerUI();
             }
-            
-            app.UseSwagger();
-            app.UseSwaggerUI();
+            else
+            {
+                app.UseSwagger();
+                app.UseSwaggerUI();
+            }
 
             app.UseHttpsRedirection();
             app.UseAuthentication();

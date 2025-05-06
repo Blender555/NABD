@@ -12,8 +12,8 @@ using NABD.Data;
 namespace NABD.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250304143230_addEdit")]
-    partial class addEdit
+    [Migration("20250504172148_All")]
+    partial class All
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -277,7 +277,6 @@ namespace NABD.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<string>("Email")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("Name")
@@ -405,6 +404,10 @@ namespace NABD.Migrations
 
                     b.Property<int?>("OxygenSaturation")
                         .HasColumnType("int");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<int>("ToolId")
                         .HasColumnType("int");
@@ -586,6 +589,9 @@ namespace NABD.Migrations
                         .HasMaxLength(20)
                         .HasColumnType("nvarchar(20)");
 
+                    b.Property<int?>("ToolId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.ToTable("Patients");
@@ -667,6 +673,13 @@ namespace NABD.Migrations
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("Status")
+                        .HasColumnType("int");
 
                     b.HasKey("Id");
 
@@ -945,8 +958,7 @@ namespace NABD.Migrations
 
                     b.Navigation("Reports");
 
-                    b.Navigation("Tool")
-                        .IsRequired();
+                    b.Navigation("Tool");
                 });
 
             modelBuilder.Entity("NABD.Models.Domain.Tool", b =>

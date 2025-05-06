@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 namespace NABD.Migrations
 {
     /// <inheritdoc />
-    public partial class Initial : Migration
+    public partial class All : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
@@ -32,6 +32,13 @@ namespace NABD.Migrations
                 columns: table => new
                 {
                     Id = table.Column<string>(type: "nvarchar(450)", nullable: false),
+                    FullName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateOfBirth = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    NationalId = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    UserType = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Specialty = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     UserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     NormalizedUserName = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
                     Email = table.Column<string>(type: "nvarchar(256)", maxLength: 256, nullable: true),
@@ -40,7 +47,6 @@ namespace NABD.Migrations
                     PasswordHash = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     SecurityStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     ConcurrencyStamp = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     PhoneNumberConfirmed = table.Column<bool>(type: "bit", nullable: false),
                     TwoFactorEnabled = table.Column<bool>(type: "bit", nullable: false),
                     LockoutEnd = table.Column<DateTimeOffset>(type: "datetimeoffset", nullable: true),
@@ -58,8 +64,9 @@ namespace NABD.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SSN = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    SSN = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
                     Specialization = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false)
@@ -77,6 +84,7 @@ namespace NABD.Migrations
                         .Annotation("SqlServer:Identity", "1, 1"),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Relationship = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false)
                 },
                 constraints: table =>
@@ -94,8 +102,10 @@ namespace NABD.Migrations
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     BirthDate = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Gender = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Email = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     PhoneNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true)
+                    PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
+                    ToolId = table.Column<int>(type: "int", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -214,7 +224,7 @@ namespace NABD.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    SSN = table.Column<int>(type: "int", maxLength: 20, nullable: false),
+                    SSN = table.Column<string>(type: "nvarchar(20)", maxLength: 20, nullable: false),
                     Name = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
                     Role = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
                     PersonalImage = table.Column<byte[]>(type: "varbinary(max)", nullable: true),
@@ -337,12 +347,10 @@ namespace NABD.Migrations
                 {
                     Id = table.Column<int>(type: "int", nullable: false)
                         .Annotation("SqlServer:Identity", "1, 1"),
-                    OxygenSaturation = table.Column<int>(type: "int", nullable: false),
-                    BodyTemperature = table.Column<float>(type: "real", nullable: false),
-                    VitalDataTimestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
-                    HeartRate = table.Column<int>(type: "int", nullable: false),
                     QrCode = table.Column<string>(type: "nvarchar(100)", maxLength: 100, nullable: false),
-                    PatientId = table.Column<int>(type: "int", nullable: true)
+                    SerialNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    PatientId = table.Column<int>(type: "int", nullable: true),
+                    Status = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -398,6 +406,32 @@ namespace NABD.Migrations
                         onDelete: ReferentialAction.Restrict);
                     table.ForeignKey(
                         name: "FK_Emergencies_Tools_ToolId",
+                        column: x => x.ToolId,
+                        principalTable: "Tools",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Restrict);
+                });
+
+            migrationBuilder.CreateTable(
+                name: "MQTTMessages",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Topic = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Message = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    SerialNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    OxygenSaturation = table.Column<int>(type: "int", nullable: true),
+                    BodyTemperature = table.Column<float>(type: "real", nullable: true),
+                    HeartRate = table.Column<int>(type: "int", nullable: true),
+                    VitalDataTimestamp = table.Column<DateTime>(type: "datetime2", nullable: false),
+                    ToolId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_MQTTMessages", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_MQTTMessages_Tools_ToolId",
                         column: x => x.ToolId,
                         principalTable: "Tools",
                         principalColumn: "Id",
@@ -536,6 +570,11 @@ namespace NABD.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
+                name: "IX_MQTTMessages_ToolId",
+                table: "MQTTMessages",
+                column: "ToolId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_Notifications_DoctorId",
                 table: "Notifications",
                 column: "DoctorId");
@@ -616,6 +655,9 @@ namespace NABD.Migrations
 
             migrationBuilder.DropTable(
                 name: "MedicalHistory");
+
+            migrationBuilder.DropTable(
+                name: "MQTTMessages");
 
             migrationBuilder.DropTable(
                 name: "Notifications");
