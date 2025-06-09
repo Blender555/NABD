@@ -9,5 +9,7 @@ namespace NABD.Repositories
         Task<Report> Create(Report report);
         Task<Report> Update(int id, Report report);
         Task<Report> Delete(int id);
+        Task<List<Report>> GetReportsByPatientId(int patientId);
+
     }
 }

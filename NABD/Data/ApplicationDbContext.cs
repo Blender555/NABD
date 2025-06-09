@@ -14,7 +14,6 @@ namespace NABD.Data
         }
         public DbSet<Emergency> Emergencies { get; set; }
         public DbSet<Guardian> Guardians { get; set; }
-        public DbSet<MedicalHistory> MedicalHistory { get; set; }
         public DbSet<Doctor> Doctors { get; set; }
         public DbSet<Nurse> Nurses { get; set; }
         public DbSet<Notification> Notifications { get; set; }
@@ -91,13 +90,6 @@ namespace NABD.Data
                 .HasOne(pd => pd.Doctor)
                 .WithMany(d => d.PatientDoctors)
                 .HasForeignKey(pd => pd.DoctorId)
-                .OnDelete(DeleteBehavior.Cascade);
-
-            // MedicalHistory Relationship
-            modelBuilder.Entity<MedicalHistory>()
-                .HasOne(mh => mh.Patient)
-                .WithOne(p => p.MedicalHistory)
-                .HasForeignKey<MedicalHistory>(mh => mh.PatientId)
                 .OnDelete(DeleteBehavior.Cascade);
 
             // Patient - Report Relationship

@@ -24,7 +24,6 @@ namespace NABD.Repositories
             var existingPatient = await _context.Patients
                 .Include(p => p.PatientGuardians)
                 .Include(p => p.PatientDoctors)
-                .Include(p => p.MedicalHistory)
                 .Include(p => p.Reports)
                 .Include(p => p.Tool)
                 .FirstOrDefaultAsync(p => p.Id == id);
@@ -81,10 +80,6 @@ namespace NABD.Repositories
                 _context.Emergencies.RemoveRange(patient.Emergencies);
             }
 
-            if (patient.MedicalHistory != null)
-            {
-                _context.MedicalHistory.Remove(patient.MedicalHistory);
-            }
 
             if (patient.Tool != null)
             {
@@ -149,25 +144,6 @@ namespace NABD.Repositories
                 })
                 .ToList();
         }
-        public async Task<GetMedicalHistoryDto> GetMedicalHistoryForPatient(int id)
-        {
-            var patient = await _context.Patients
-                .Where(x => x.Id == id)
-                .Include(x => x.MedicalHistory)
-                .FirstOrDefaultAsync();
-
-            if (patient == null || patient.MedicalHistory == null)
-            {
-                return null;
-            }
-
-            return new GetMedicalHistoryDto
-            {
-                Diagonsis = patient.MedicalHistory.Diagnosis,
-                Id = patient.MedicalHistory.Id,
-                Medication = patient.MedicalHistory.Medication
-            };
-        }
         public async Task<List<GetAllReportsDto>> GetReportsForPatient(int id)
         {
             var patient = await _context.Patients
@@ -184,7 +160,7 @@ namespace NABD.Repositories
                 .Select(x => new GetAllReportsDto
                 {
                     Id = x.Id,
-                    ReportDetails = x.ReportDetails,
+                    Diagnosis = x.Diagnosis,
                     UploadDate = x.UploadDate
                 })
                 .ToList();
@@ -194,7 +170,6 @@ namespace NABD.Repositories
             var patient = await _context.Patients
                 .Where(x => x.Id == id)
                 .Include(x => x.PatientGuardians)
-                .Include(x => x.MedicalHistory)
                 .Include(x => x.Reports)
                 .FirstOrDefaultAsync();
 
@@ -217,19 +192,12 @@ namespace NABD.Repositories
                     Relationship = x.Guardian.Relationship
                 }).ToList(),
 
-                MedicalHistory = patient.MedicalHistory == null ? null
-                : new GetMedicalHistoryDto
-                {
-                    Id = patient.MedicalHistory.Id,
-                    Diagonsis = patient.MedicalHistory.Diagnosis,
-                    Medication = patient.MedicalHistory.Medication
-                },
 
                 Reports = patient.Reports.Select(x => new GetAllReportsDto
                 {
                     Id = x.Id,
                     UploadDate = x.UploadDate,
-                    ReportDetails = x.ReportDetails
+                    Diagnosis = x.Diagnosis
                 }).ToList()
             };
         }

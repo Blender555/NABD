@@ -22,7 +22,6 @@ namespace NABD.Models.Domain
 
         public int? ToolId { get; set; }
         public Tool? Tool { get; set; } //1:1
-        public required MedicalHistory MedicalHistory { get; set; } //1:1
         public ICollection<PatientDoctor> PatientDoctors { get; set; } = new HashSet<PatientDoctor>(); //M:M
         public ICollection<PatientGuardian> PatientGuardians { get; set; } = new HashSet<PatientGuardian>(); //M:M
         public ICollection<Report> Reports { get; set; } = new HashSet<Report>(); //1:M

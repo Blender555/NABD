@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using NABD.DTO;
 using NABD.Models.Domain;
 using NABD.Repositories;
+using ClosedXML.Excel;
+using System.IO;
 
 namespace NABD.Controllers
 {
@@ -72,6 +74,52 @@ namespace NABD.Controllers
 
             var reportDto = mapper.Map<Report>(report);
             return Ok(reportDto);
+        }
+
+        [HttpGet]
+        [Route("patient/{patientId}")]
+        public async Task<IActionResult> GetReportsByPatientId(int patientId)
+        {
+            var reports = await reportRepsitory.GetReportsByPatientId(patientId);
+            if (reports == null || reports.Count == 0)
+                return NotFound($"No reports found for patient with ID {patientId}");
+
+            var reportsDto = mapper.Map<List<UpdateReportDto>>(reports);
+            return Ok(reportsDto);
+        }
+
+        [HttpGet]
+        [Route("patient/{patientId}/medicalhistory")]
+        public async Task<IActionResult> ExportReportsToExcel(int patientId)
+        {
+            var reports = await reportRepsitory.GetReportsByPatientId(patientId);
+            if (reports == null || reports.Count == 0)
+                return NotFound($"No reports found for patient with ID {patientId}");
+
+            using var workbook = new XLWorkbook();
+            var worksheet = workbook.Worksheets.Add("Patient Reports");
+
+            // Header row
+            worksheet.Cell(1, 1).Value = "Upload Date";
+            worksheet.Cell(1, 2).Value = "Diagnosis";
+            worksheet.Cell(1, 3).Value = "Medication";
+
+            int currentRow = 2;
+
+            foreach (var report in reports)
+            {
+                worksheet.Cell(currentRow, 1).Value = report.UploadDate.ToString("yyyy-MM-dd");
+                worksheet.Cell(currentRow, 2).Value = report.Diagnosis;
+                worksheet.Cell(currentRow, 3).Value = report.Medication;
+                currentRow++;
+            }
+
+            using var stream = new MemoryStream();
+            workbook.SaveAs(stream);
+            stream.Seek(0, SeekOrigin.Begin);
+
+            var fileName = $"Patient_{patientId}_Reports_{DateTime.UtcNow:yyyyMMddHHmmss}.xlsx";
+            return File(stream.ToArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet", fileName);
         }
     }
 }

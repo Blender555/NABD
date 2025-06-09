@@ -37,7 +37,6 @@ namespace GraduationProject
             builder.Services.AddScoped<IGuardianRepository, GuardianRepository>();
             builder.Services.AddScoped<IDoctorRepository, DoctorRepository>();
             builder.Services.AddScoped<INurseRepository, NurseRepository>();
-            builder.Services.AddScoped<IMedicalHistoryRepository, MedicalHistoryRepository>();
             builder.Services.AddScoped<IReportRepository, ReportRepository>();
             builder.Services.AddScoped<IEmergencyRepository, EmergencyRepository>();
             builder.Services.AddScoped<IToolRepository, ToolRepository>();

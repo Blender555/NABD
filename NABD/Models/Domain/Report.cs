@@ -6,9 +6,11 @@ namespace NABD.Models.Domain
     public class Report
     {
         public int Id { get; set; }
-        public DateTime UploadDate { get; set; }
+        public DateTime UploadDate { get; set; } = DateTime.UtcNow;
         [Required, MaxLength(1000)]
-        public string ReportDetails { get; set; }
+        public string? Diagnosis { get; set; }
+        [MaxLength(500)]
+        public string? Medication { get; set; }
 
         [ForeignKey(nameof(Patient))]
         public int? PatientId { get; set; }

@@ -47,10 +47,19 @@ namespace NABD.Repositories
             }
 
             exestingReport.UploadDate = report.UploadDate;
-            exestingReport.ReportDetails = report.ReportDetails;
+            exestingReport.Diagnosis = report.Diagnosis;
+            exestingReport.Medication = report.Medication;
 
             await dbContext.SaveChangesAsync();
             return exestingReport;
         }
+        public async Task<List<Report>> GetReportsByPatientId(int patientId)
+        {
+            return await dbContext.Reports
+                .Where(r => r.PatientId == patientId)
+                .OrderByDescending(r => r.UploadDate)
+                .ToListAsync();
+        }
+
     }
 }

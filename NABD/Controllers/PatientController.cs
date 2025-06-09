@@ -97,19 +97,6 @@ namespace NABD.Controllers
         }
 
         [HttpGet]
-        [Route("{id}/Medical-History")]
-        public async Task<IActionResult> GetMedicalHistoryForPatient(int id)
-        {
-            var medicalhistorymodel = await patientrepo.GetMedicalHistoryForPatient(id);
-            if (medicalhistorymodel == null)
-            {
-                return NotFound("No medical history founded for the patient!");
-            }
-            var medicalhistorydto = mapper.Map<GetMedicalHistoryDto>(medicalhistorymodel);
-            return Ok(medicalhistorydto);
-        }
-
-        [HttpGet]
         [Route("{id}/Reports")]
         public async Task<IActionResult> GetAllReportsForPatient(int id)
         {

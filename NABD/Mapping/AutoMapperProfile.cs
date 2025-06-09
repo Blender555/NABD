@@ -14,7 +14,6 @@ namespace NABD.Mapping
             CreateMap<Patient, AddPatientDto>().ReverseMap();
             CreateMap<Doctor, GetAllDoctorsForPatientDto>();
             CreateMap<Guardian, GetAllGuardiansDto>();
-            CreateMap<MedicalHistory, GetMedicalHistoryDto>();
             CreateMap<Report, GetAllReportsDto>();
 
             // Doctor Mappings
@@ -37,14 +36,10 @@ namespace NABD.Mapping
             CreateMap<Notification, GetAllNotificationsForGuardianDto>();
             CreateMap<Emergency, GetAllEmergenciesForGuardianDto>();
 
-            // Medical History Mappings
-            CreateMap<MedicalHistory, AddMedicalHistoryDto>().ReverseMap();
-            CreateMap<MedicalHistory, GetMedicalHistoryDto>().ReverseMap();
-            CreateMap<MedicalHistory, UpdateMedicalHistoryDto>().ReverseMap();
-
             // Report Mappings
             CreateMap<Report, AddReportDto>().ReverseMap();
             CreateMap<Report, UpdateReportDto>().ReverseMap();
+            CreateMap<UpdateReportDto,Report>().ReverseMap();
 
             // Emergency Mappings
             //CreateMap<Emergency, EmergencyDto>().ReverseMap();

@@ -12,7 +12,6 @@ namespace NABD.Repositories
         Task<Patient> Delete(int id);
         Task<List<GetAllDoctorsForPatientDto>> GetDoctorsForPatient(int id);
         Task<List<GetAllGuardiansDto>> GetAllGuardiansForPatient(int id);
-        Task<GetMedicalHistoryDto> GetMedicalHistoryForPatient(int id);
         Task<List<GetAllReportsDto>> GetReportsForPatient(int id);
         Task<PatientDetailsDto> GetPatientDetails(int id);
     }

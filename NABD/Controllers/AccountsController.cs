@@ -72,8 +72,7 @@ public class AccountsController : ControllerBase
                     Gender = user.Gender,
                     Email = user.Email,
                     PhoneNumber = user.PhoneNumber,
-                    ToolId = 2,
-                    MedicalHistory = new MedicalHistory()
+                    ToolId = 2
                 };
 
                 _context.Patients.Add(patient);
